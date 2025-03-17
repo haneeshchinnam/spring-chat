@@ -1,6 +1,7 @@
 package com.example.practice.controller;
 
 import com.example.practice.payload.ChatDto;
+import com.example.practice.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -14,11 +15,22 @@ public class ChatController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Autowired
+    private ChatService chatService;
+
     @MessageMapping("/message")
     @SendTo("/topic/chatroom")
     public ChatDto sendMessage(@Payload ChatDto message) {
         System.out.println("Message "+ message.toString());
-        return message;
+        try {
+            ChatDto savedMessage = chatService.createMessage(message);
+            if (savedMessage == null) {
+                throw new RuntimeException("Failed to save message");
+            }
+            return savedMessage;
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving message: " + e.getMessage(), e);
+        }
     }
 
     // Send a message to a chatroom
@@ -37,7 +49,7 @@ public class ChatController {
 
     // Send a private message to a user
     @MessageMapping("/private-message/{recipient}")
-    public void sendPrivateMessage(@DestinationVariable String recipient, @Payload ChatDto message,
+    public ChatDto sendPrivateMessage(@DestinationVariable String recipient, @Payload ChatDto message,
                                    @Header("simpSessionAttributes") Map<String, Object> sessionAttributes) {
         String username = (String) sessionAttributes.get("username");
 
@@ -45,8 +57,18 @@ public class ChatController {
             throw new RuntimeException("Unauthorized access");
         }
 
-        System.out.println("User " + username + " sent a private message to: " + recipient);
-        simpMessagingTemplate.convertAndSendToUser(recipient, "/queue/messages", message);
+        System.out.println("Message "+ message.toString());
+        try {
+            ChatDto savedMessage = chatService.createMessage(message);
+            if (savedMessage == null) {
+                throw new RuntimeException("Failed to save message");
+            }
+            System.out.println("User " + username + " sent a private message to: " + recipient);
+            simpMessagingTemplate.convertAndSendToUser(recipient, "/queue/messages", savedMessage);
+            return savedMessage;
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving message: " + e.getMessage(), e);
+        }
     }
 
 }

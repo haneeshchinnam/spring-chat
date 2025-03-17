@@ -28,4 +28,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setUserDestinationPrefix("/user");
     }
 
+//    @Override
+//    public void configureClientInboundChannel(ChannelRegistration registration) {
+//        registration.interceptors(new ChannelInterceptor() {
+//            @Override
+//            public Message<?> preSend(Message<?> message, MessageChannel channel) {
+//                StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+//                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//
+//                System.out.println("Receiver Message"+ message.getPayload().toString());
+//                if (auth != null) {
+//                    accessor.setUser(auth);
+//                }
+//                return message;
+//            }
+//        });
+//    }
+
+
 }

@@ -31,8 +31,7 @@ public class AuthInterceptor implements HandshakeInterceptor {
         String authHeader = headers.getFirst("Authorization");
         System.out.println(authHeader);
 
-        if (request instanceof ServletServerHttpRequest) {
-            ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
+        if (request instanceof ServletServerHttpRequest servletRequest) {
             HttpServletRequest httpServletRequest = servletRequest.getServletRequest();
 
             // ✅ Extract token from query parameters

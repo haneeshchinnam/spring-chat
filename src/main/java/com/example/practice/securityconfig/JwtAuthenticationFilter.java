@@ -38,9 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        System.out.println("Auth Header"+ authHeader);
+        System.out.println("Auth Header"+ authHeader+request.getRequestURI());
 
-        if(authHeader == null || !authHeader.startsWith("Bearer")) {
+        if(request.getRequestURI().contains("auth/refresh") || (authHeader == null || !authHeader.startsWith("Bearer"))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -62,7 +62,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             }
         } catch (Exception e) {
-            System.out.println("error");
+            System.out.println("JWT error: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Authentication failed\"}");
             handlerExceptionResolver.resolveException(request, response, null, e);
         }
     }

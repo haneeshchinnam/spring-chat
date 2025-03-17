@@ -1,10 +1,8 @@
 package com.example.practice.controller;
 
 import com.example.practice.modal.User;
-import com.example.practice.payload.LoginResponse;
-import com.example.practice.payload.LoginUserDto;
-import com.example.practice.payload.RefreshTokenRequest;
-import com.example.practice.payload.UserDto;
+import com.example.practice.payload.*;
+import com.example.practice.repository.UserRepository;
 import com.example.practice.service.UserService;
 import com.example.practice.serviceImpl.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +27,11 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> createUser (@RequestBody UserDto userDto) {
@@ -52,18 +57,36 @@ public class AuthController {
         String username = jwtService.extractUsername(refreshTokenRequest.getRefreshToken());
 
         if(username != null) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) authentication.getPrincipal();
+            User currentUser = (User) userRepository.findByEmail(username).get();
             String newAccessToken = jwtService.generateToken(currentUser);
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
         }
-        return ResponseEntity.badRequest().body("Invalid refresh token");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid refresh token");
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> authenticatedUser() {
+    public ResponseEntity<UserResponse> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(currentUser);
+        return ResponseEntity.ok(new UserResponse(currentUser.getId(), currentUser.getName()));
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verify(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid or missing token"));
+        }
+        String token = authorizationHeader.substring(7);
+        if(!token.isEmpty()) {
+            String username = jwtService.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if(jwtService.isTokenValid(token, userDetails)) {
+                return ResponseEntity.ok(Map.of("accessToken", token));
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "token expired"));
+            }
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "token not found"));
+        }
     }
 }

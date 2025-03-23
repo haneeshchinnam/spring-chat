@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +41,28 @@ public class User implements UserDetails {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private MembershipDetails membershipDetails;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BorrowRecord> borrowRecords = new ArrayList<>();
+
+    public List<BorrowRecord> getBorrowRecords() {
+        return borrowRecords;
+    }
+
+    public void setBorrowRecords(List<BorrowRecord> borrowRecords) {
+        this.borrowRecords = borrowRecords;
+    }
+
+    public MembershipDetails getMembershipDetails() {
+        return membershipDetails;
+    }
+
+    public void setMembershipDetails(MembershipDetails membershipDetails) {
+        this.membershipDetails = membershipDetails;
+    }
 
     public Long getId() {
         return id;

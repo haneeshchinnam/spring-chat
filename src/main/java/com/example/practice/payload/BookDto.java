@@ -1,5 +1,9 @@
 package com.example.practice.payload;
 
+import lombok.Builder;
+import org.springframework.validation.annotation.Validated;
+
+@Builder
 public class BookDto {
     private Long id;
     private String title;

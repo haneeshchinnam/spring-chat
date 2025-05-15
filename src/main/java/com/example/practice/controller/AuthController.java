@@ -5,6 +5,7 @@ import com.example.practice.payload.*;
 import com.example.practice.repository.UserRepository;
 import com.example.practice.service.UserService;
 import com.example.practice.serviceImpl.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +36,7 @@ public class AuthController {
     private UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> createUser (@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser (@Valid @RequestBody UserDto userDto) {
         return new ResponseEntity<>(userService.createUser(userDto), HttpStatus.CREATED);
     }
 

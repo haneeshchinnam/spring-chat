@@ -44,7 +44,7 @@ public class BookServiceImpl implements BookService {
     }
 
     public BookDto bookEntityToDto(Book book) {
-        BookDto bookDto = new BookDto();
+        BookDto bookDto = BookDto.builder().title(book.getTitle()).author(book.getAuthor()).build();
         bookDto.setAuthor(book.getAuthor());
         bookDto.setTitle(book.getTitle());
         bookDto.setId(book.getId());

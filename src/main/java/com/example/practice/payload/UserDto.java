@@ -1,9 +1,14 @@
 package com.example.practice.payload;
 
+import com.example.practice.validation.NoSpecialCharacters;
+
 public class UserDto {
 
     private long id;
+
+    @NoSpecialCharacters
     private String name;
+
     private String email;
     private String password;
 

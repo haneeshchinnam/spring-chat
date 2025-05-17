@@ -10,6 +10,9 @@ import com.example.practice.repository.BorrowRecordRepository;
 import com.example.practice.repository.UserRepository;
 import com.example.practice.service.BookService;
 import com.example.practice.service.BorrowRecordService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +32,15 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
 
 
     @Override
+    @Transactional
     public List<BorrowRecordDto> getBorrowRecordsByUser(Long id) {
         try {
             List<BorrowRecord> borrowRecords = borrowRecordRepository.getBorrowRecordsByUserId(id);
-            return borrowRecords.stream().map(this::borrowRecordEntityToDto).toList();
+//            System.out.println(borrowRecords);
+            return borrowRecords.stream().map((item) -> {
+                User user = item.getUser();
+                return borrowRecordEntityToDto(BorrowRecord.builder().borrowDate(item.getBorrowDate()).returnDate(item.getReturnDate()).user(user).book(item.getBook()).id(item.getId()).build());
+            }).toList();
         } catch (Exception e) {
             throw new UserNotFound(e.getMessage());
         }
@@ -50,6 +58,12 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         }
     }
 
+    @Override
+    @Transactional
+    public List<BorrowRecordDto> getBorrowRecords() {
+        return borrowRecordRepository.getBorrowRecordList().stream().map(this::borrowRecordEntityToDto).toList();
+    }
+
     public BorrowRecordDto borrowRecordEntityToDto(BorrowRecord borrowRecord) {
         BorrowRecordDto borrowRecordDto = new BorrowRecordDto();
         borrowRecordDto.setId(borrowRecord.getId());
@@ -65,7 +79,7 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         borrowRecord.setBorrowDate(borrowRecordDto.getBorrowDate());
         borrowRecord.setReturnDate(borrowRecordDto.getReturnDate());
         User user = userRepository.findUserById(borrowRecordDto.getUserId()).orElseThrow(() -> new UserNotFound(String.format("User Id %d user does not exist", borrowRecordDto.getUserId())));
-        Book book = bookRepository.findById(borrowRecordDto.getBookId()).orElseThrow(() -> new UserNotFound(String.format("Book Id %d book does not exist", borrowRecord.getBookId())));
+        Book book = bookRepository.findById(borrowRecordDto.getBookId()).orElseThrow(() -> new UserNotFound(String.format("Book Id %d book does not exist", borrowRecordDto.getBookId())));
         borrowRecord.setUser(user);
         borrowRecord.setBook(book);
         return borrowRecord;

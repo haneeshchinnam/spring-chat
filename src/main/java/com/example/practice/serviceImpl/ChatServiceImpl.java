@@ -75,11 +75,11 @@ public class ChatServiceImpl implements ChatService {
 
         User receiver = userRepository.findUserById(chatDto.getReceiver())
                 .orElseThrow(() -> new UserNotFound(String.format("Receiver Id %d user does not exist", chatDto.getReceiver())));
-        message.setReceiverName(receiver);
+        message.setReceiver(receiver);
 
         User sender = userRepository.findUserById(chatDto.getSender())
                 .orElseThrow(() -> new UserNotFound(String.format("Sender Id %d user does not exist", chatDto.getSender())));
-        message.setSenderName(sender);
+        message.setSender(sender);
         return message;
     }
 

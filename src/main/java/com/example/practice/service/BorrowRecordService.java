@@ -8,4 +8,6 @@ public interface BorrowRecordService {
     List<BorrowRecordDto> getBorrowRecordsByUser(Long id);
 
     BorrowRecordDto addBorrowRecordForUser(BorrowRecordDto borrowRecordDto);
+
+    List<BorrowRecordDto> getBorrowRecords();
 }

@@ -9,6 +9,9 @@ import com.example.practice.repository.BookRepository;
 import com.example.practice.repository.MembershipRepository;
 import com.example.practice.repository.UserRepository;
 import com.example.practice.service.MembershipService;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import java.util.Optional;
 @Service
 public class MembershipServiceImpl implements MembershipService {
 
+    private static final Logger log = LoggerFactory.getLogger(MembershipServiceImpl.class);
     @Autowired
     private MembershipRepository membershipRepository;
 
@@ -25,10 +29,14 @@ public class MembershipServiceImpl implements MembershipService {
     private UserRepository userRepository;
 
     @Override
+    @Transactional
     public MembershipDetails getMembership(Long user_id) {
         Optional<MembershipDetails> membershipDetails = membershipRepository.findMembershipUserById(user_id);
         if(membershipDetails.isPresent()) {
-            return membershipDetails.get();
+            User user = membershipDetails.get().getUser();
+            log.info("User Details {}", user);
+            MembershipDetails membershipDetails1 = membershipDetails.get();
+            return new MembershipDetails(membershipDetails1.getId(), membershipDetails1.getMembershipType(), membershipDetails1.getExpirationDate(), user);
         } else {
             throw new UserNotFound("User does not have a membership");
         }

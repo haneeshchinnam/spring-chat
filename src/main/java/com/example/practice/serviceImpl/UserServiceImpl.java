@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,11 +44,15 @@ public class UserServiceImpl implements UserService {
 
     public User authenticate(LoginUserDto input) {
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword())
-            );
-            return userRepository.findByEmail(input.getEmail())
+
+            User user = userRepository.findByEmail(input.getEmail())
                     .orElseThrow(() -> new UserNotFound(String.format("User email %s not found", input.getEmail())));
+            if(user != null) {
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword())
+                );
+            }
+            return user;
         } catch (Exception ex) {
             throw new UserNotFound(String.format("User email %s not found", input.getEmail()));
         }

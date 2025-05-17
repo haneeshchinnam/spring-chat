@@ -10,6 +10,9 @@ import java.util.List;
 
 @Repository
 public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long> {
-    @Query(value = "SELECT * FROM borrow_record b WHERE b.user_id = :id", nativeQuery = true)
+    @Query("SELECT br FROM BorrowRecord br JOIN FETCH br.user WHERE br.user.id = :id")
     List<BorrowRecord> getBorrowRecordsByUserId(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM borrow_record", nativeQuery = true)
+    List<BorrowRecord> getBorrowRecordList();
 }

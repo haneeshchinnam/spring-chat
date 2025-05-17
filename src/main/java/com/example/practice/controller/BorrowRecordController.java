@@ -15,6 +15,11 @@ public class BorrowRecordController {
     @Autowired
     BorrowRecordService borrowRecordService;
 
+    @GetMapping("/")
+    ResponseEntity<List<BorrowRecordDto>> getBorrowRecords() {
+        return ResponseEntity.ok(borrowRecordService.getBorrowRecords());
+    }
+
     @GetMapping("/{id}")
     ResponseEntity<List<BorrowRecordDto>> getBorrowRecordsByUserId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(borrowRecordService.getBorrowRecordsByUser(id));

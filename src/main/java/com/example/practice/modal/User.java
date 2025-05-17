@@ -1,6 +1,10 @@
 package com.example.practice.modal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +20,7 @@ import java.util.List;
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email"})
 })
+@Data
 public class User implements UserDetails {
 
     @Id
@@ -42,19 +47,11 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private MembershipDetails membershipDetails;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BorrowRecord> borrowRecords = new ArrayList<>();
-
-    public List<BorrowRecord> getBorrowRecords() {
-        return borrowRecords;
-    }
-
-    public void setBorrowRecords(List<BorrowRecord> borrowRecords) {
-        this.borrowRecords = borrowRecords;
-    }
 
     public MembershipDetails getMembershipDetails() {
         return membershipDetails;
